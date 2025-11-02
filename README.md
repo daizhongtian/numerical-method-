@@ -1,20 +1,111 @@
-ENUME 2025 — MATLAB Assignments (A/B/C)
+# ENUME 2025 – Numerical Methods Assignments
 
-Project overview
-This repository contains three MATLAB assignments and their code:
-A: Estimate left-ankle dorsiflexion angle from 3D motion-capture by building LT/LP frames; add Gaussian noise, denoise with a low-pass filter, and select the optimal cutoff via MAE.
-B: Fourier-series approximation of an exponential pulse; compute coefficients via a rectangle rule and via integral(), compare coefficient/reconstruction errors versus step size and truncation order; observe the Gibbs phenomenon.
-C: Extended Lotka–Volterra predator–prey model with a quadratic density term; implement ode45, Gear2, and RK4; perform parameter fitting (fminsearch) and compare accuracy–runtime tradeoffs.
+A collection of three MATLAB assignments for the ENUME 2025 numerical methods course.  Each folder contains the original brief, the submitted report, and well-documented MATLAB code that can be executed directly to reproduce the results and figures discussed in the reports.
 
-Environment
+## Repository layout
 
-MATLAB R2023a or newer.
+```
+Assignment A/
+  ENUME 2025 - Assignment A - Estimation of lower limb joint angles.pdf
+  finalsolution.m
+  lpfilt.m
+  typical_gait.mat
+  report.pdf
+Assignment B/
+  ENUME 2025L 10.pdf
+  solution5.m
+  mae_vs_h.csv (generated)
+  report assignment 2.pdf
+Assignment C/
+  animals_1.csv
+  animals_2.csv
+  animals_3.csv
+  final solution.m
+  report assignment C.pdf
+LICENSE
+README.md
+```
 
-Assignment A needs the provided dataset and a low-pass filter helper (e.g., typical_gait.mat and lpfilt.m or equivalent).
+## Prerequisites
 
-Assignment C needs animals_*.csv; other functions (ode45, odeset, deval, fminsearch) are built-in.
+* MATLAB R2023a or later (scripts use `ode45`, `deval`, `fminsearch`, tables, tiled layouts, etc.).
+* Signal Processing Toolbox for `filtfilt` (Assignment A).
+* Optimization Toolbox is **not** required; all optimisations use the base `fminsearch` function.
+* The provided `.mat` and `.csv` data files must remain in their respective assignment folders.
 
-Quick start
-A (Gait angle + filtering): place typical_gait.mat in data, run the main script to compute clean/noisy angles, sweep cutoff frequencies, compute MAE, and output the best cutoff and comparison plots.
-B (Fourier approximation): run the main script to compute a_n, b_n (rectangle rule vs integral), reconstruct signals for multiple truncation orders M, and report coefficient/reconstruction error curves.
-C (Extended LV, fitting, and method comparison): solve with ode45/Gear2/RK4; fit parameters to the given data; sweep tolerances or step sizes to generate accuracy–time curves and summarize which solver is best under which conditions.
+To keep figures and generated tables tidy, run the scripts from within their folder so MATLAB creates output files (for example `mae_vs_h.csv`) next to the script that produced them.
+
+## Quick start
+
+1. Launch MATLAB and change the working directory to one of the assignment folders, e.g.
+   ```matlab
+   cd('path/to/numerical-method-/Assignment A')
+   ```
+2. Run the corresponding driver script:
+   * **Assignment A:** `complete_solution_no_simplifications` in `finalsolution.m`
+   * **Assignment B:** `solution5`
+   * **Assignment C:** run the script section-by-section or execute `final solution.m`
+3. Inspect the figures and console output described below.  Generated plots summarise the numerical experiments and match the accompanying reports.
+
+## Assignment details
+
+### Assignment A – Left-ankle dorsiflexion from motion capture
+
+* **Goal:** Reconstruct the left ankle dorsiflexion angle from 3D motion-capture markers, contaminate the data with Gaussian noise, and recover the best low-pass filter cutoff by minimising the mean absolute error (MAE) against the clean signal.
+* **Key files:**
+  * `finalsolution.m` – full pipeline from loading `typical_gait.mat` through frame construction, noise injection, Butterworth filtering and MAE analysis.
+  * `lpfilt.m` – helper that performs zero-phase Butterworth filtering (`filtfilt`).
+  * `typical_gait.mat` – the gait dataset required by the script.
+* **How to run:**
+  ```matlab
+  complete_solution_no_simplifications
+  ```
+* **Outputs:**
+  * Figures showing the clean, noisy, and filtered angles for each tested cutoff frequency.
+  * A plot of MAE versus cutoff frequency and a printed summary of the optimal filter.
+  * Optional Monte-Carlo repetition that averages MAE over 100 noise realisations.
+
+### Assignment B – Fourier approximation of an exponential pulse
+
+* **Goal:** Approximate a periodic exponential pulse using truncated Fourier series. Compare coefficients computed with a rectangle rule against MATLAB's `integral`, analyse convergence versus step size, visualise the Gibbs phenomenon, and tabulate the MAE of the coefficients.
+* **Key files:**
+  * `solution5.m` – main script containing helper functions for the signal definition, numerical integration, and Fourier coefficient calculation.
+  * `mae_vs_h.csv` – CSV table generated by the script with MAE statistics for multiple discretisations (will be overwritten on each run).
+* **How to run:**
+  ```matlab
+  solution5
+  ```
+* **Outputs:**
+  * Console tables comparing rectangle-rule coefficients against the integral-based reference values.
+  * Multiple figure windows illustrating reconstructions for different truncation orders and the log–log MAE versus step-size trend lines.
+  * `mae_vs_h.csv` summarising the mean absolute errors and fitted slopes.
+
+### Assignment C – Extended Lotka–Volterra predator–prey model
+
+* **Goal:** Explore an extended predator–prey model that includes quadratic density terms. Implement three solvers (`ode45`, a Gear2 predictor–corrector, and classical RK4), estimate parameters from observational data via nonlinear least squares, and compare solver accuracy/time trade-offs over a range of tolerances and step sizes.
+* **Key files:**
+  * `final solution.m` – script containing modular solver implementations (`solverOde45`, `solverGear2`, `solverKutta`) and utilities for parameter estimation (`predatorPreyEstimate`) and benchmarking (`predatorPreyTask3`).
+  * `animals_*.csv` – synthetic observation datasets used for fitting and benchmarking.
+* **How to run:**
+  ```matlab
+  run('final solution.m')
+  ```
+  The script prints progress for Tasks 1–3 and produces plots once each stage completes.
+* **Outputs:**
+  * Demonstration plots comparing solver trajectories for representative parameters.
+  * Console summaries of the estimated parameters and root-mean-square relative errors.
+  * Multiple accuracy versus tolerance/step-size figures and wall-clock timing comparisons.
+
+## Reproducing report figures
+
+Each script saves or displays every figure referenced in the corresponding PDF report. If you need to export high-resolution images, use MATLAB's built-in `exportgraphics` or `saveas` functions after the plots appear.
+
+## Troubleshooting
+
+* Ensure the working folder contains the required data files (`typical_gait.mat`, `animals_*.csv`). MATLAB will raise a `load` or `readmatrix` error otherwise.
+* If Signal Processing Toolbox is unavailable, replace `lpfilt.m` with an alternative filtering implementation (e.g., using `designfilt` plus `filtfilt`).
+* Scripts are designed for reproducibility but rely on random noise (Assignment A). Set the random seed using `rng(seed)` before running if you require identical Monte-Carlo statistics.
+
+## License
+
+The repository is released under the MIT License; see [`LICENSE`](LICENSE) for details.
